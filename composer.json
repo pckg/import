@@ -1,0 +1,19 @@
+{
+  "name": "pckg/import",
+  "description": "Simple import strategies",
+  "homepage": "https://github.com/pckg/import",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Bojan Rajh",
+      "email": "schtr4jh@schtr4jh.net"
+    }
+  ],
+  "require": {},
+  "autoload": {
+    "psr-0": {
+      "Pckg": "src\\"
+    }
+  },
+  "minimum-stability": "dev"
+}
