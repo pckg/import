@@ -1,11 +1,9 @@
 <?php namespace Pckg\Import;
 
 use Illuminate\Database\Eloquent\Model;
-use Laraplus\Data\Cached;
 
 abstract class AbstractStrategy implements Strategy
 {
-    use Cached;
 
     /**
      * Key returned as foreign key reference.
@@ -21,6 +19,8 @@ abstract class AbstractStrategy implements Strategy
      * Skip first row when set to true.
      */
     protected $header = false;
+
+    protected $objectManager;
 
     /**
      * @return $this
@@ -67,9 +67,9 @@ abstract class AbstractStrategy implements Strategy
      * @param array $data
      * @return Model
      */
-    public function update(Model $record, $data = [])
+    public function update($record, $data = [])
     {
-        $record->forceFill($data)->save();
+        $this->getModel()->update($data, $this->identifier . ' = ?', [$data[$this->identifier]]);
 
         return $record;
     }
@@ -83,7 +83,7 @@ abstract class AbstractStrategy implements Strategy
     public function insert($data = [])
     {
         $model = $this->getModel();
-        $model->forceFill($data)->save();
+        $model->insert($data);
 
         $this->afterInsert($model);
 
@@ -107,7 +107,7 @@ abstract class AbstractStrategy implements Strategy
      */
     public function getExistingRecord(array $data)
     {
-        return $this->getModel()->newQueryWithoutScopes()->where($this->identifier, $data[$this->identifier])->first();
+        return $this->getModel()->select()->where($this->identifier . ' = ?')->prepare([$data[$this->identifier]])->getRow();
     }
 
     /**
@@ -119,13 +119,11 @@ abstract class AbstractStrategy implements Strategy
      */
     public function getPrimaryKey($value)
     {
-        return $this->cache($value, function () use ($value) {
-            if (!($record = $this->getRecordByIdentifier($value))) {
-                $record = $this->getModel()->newQueryWithoutScopes()->forceCreate($this->autoPrepare($value));
-            }
+        if (!($record = $this->getRecordByIdentifier($value))) {
+            $record = $this->getModel()->insert($this->autoPrepare($value));
+        }
 
-            return $record->{$this->primary};
-        });
+        return $record[$this->primary];
     }
 
     /**
@@ -134,7 +132,7 @@ abstract class AbstractStrategy implements Strategy
      */
     public function getRecordByIdentifier($value)
     {
-        return $this->getModel()->newQueryWithoutScopes()->where($this->identifier, $value)->first();
+        return $this->getModel()->select()->where($this->identifier . ' = ?')->prepare([$value])->getRow();
     }
 
     /**
@@ -158,6 +156,13 @@ abstract class AbstractStrategy implements Strategy
     public function hasHeader()
     {
         return $this->header;
+    }
+
+    public function setObjectManager($objectManager)
+    {
+        $this->objectManager = $objectManager;
+
+        return $this;
     }
 
 }
