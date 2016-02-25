@@ -1,9 +1,27 @@
 <?php namespace Pckg\Import;
 
+use Exception;
 use Illuminate\Database\Eloquent\Model;
+use Maatwebsite\Excel\Readers\LaravelExcelReader;
 
 interface Strategy
 {
+
+    /**
+     * Validate file.
+     *
+     * @return mixed
+     * @throws Exception
+     */
+    public function validate(LaravelExcelReader $reader);
+
+    /**
+     * Definer rules per row for Laravel validator.
+     *
+     * @return array
+     */
+    public function rules();
+
     /**
      * Called before import.
      * May be used as cleanup method.

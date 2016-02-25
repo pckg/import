@@ -1,7 +1,11 @@
 <?php namespace Pckg\Import;
 
+use Exception;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Validator;
 use Laraplus\Data\Cached;
+use Maatwebsite\Excel\Collections\CellCollection;
+use Maatwebsite\Excel\Readers\LaravelExcelReader;
 
 abstract class AbstractStrategy implements Strategy
 {
@@ -23,6 +27,44 @@ abstract class AbstractStrategy implements Strategy
     protected $header = false;
 
     /**
+     * Logger
+     */
+    protected $log;
+
+    protected $autoprepare = true;
+
+    public function validate(LaravelExcelReader $reader)
+    {
+        if (!$this->rules()) {
+            return;
+        }
+
+        $count = 0;
+        $reader->each(function (CellCollection $row) use (&$count) {
+            if ($count > 0 || !$this->hasHeader()) {
+                $mapped = [];
+                try {
+                    $mapped = $this->map($row->all());
+                } catch (Exception $e) {
+                    $this->log->log('Validator mapping failed');
+                    throw $e;
+                }
+                $validator = Validator::make($mapped, $this->rules(), []);
+
+                if ($validator->fails()) {
+                    throw new Exception('Invalid row #' . $count . ': ' . implode(', ', $validator->messages()->all()));
+                }
+            }
+            $count++;
+        });
+    }
+
+    public function rules()
+    {
+        return [];
+    }
+
+    /**
      * @return $this
      */
     public function beforeImport()
@@ -39,17 +81,70 @@ abstract class AbstractStrategy implements Strategy
      */
     public function import(array $row)
     {
-        $data = $this->transform($this->map($row));
+        $data = [];
+        $mapped = [];
+        try {
+            $mapped = $this->map($row);
+        } catch (\Exception $e) {
+            $this->log->log('Mapping failed');
+            throw $e;
+        }
 
-        if ($record = $this->getExistingRecord($data)) {
-            $this->update($record, $data);
+        try {
+            $transformed = $this->transform($mapped);
+            $data = $transformed;
+        } catch (\Exception $e) {
+            $this->log->log('Transformation failed');
+            throw $e;
+        }
+
+        $record = $this->getExistingRecord($data);
+
+        if ($record) {
+            $this->tryUpdate($record, $data);
 
         } else {
-            $record = $this->insert($data);
+            $record = $this->tryInsert($data);
 
         }
 
         return $record;
+    }
+
+    public function tryUpdate($record, $data)
+    {
+        try {
+            if ($this->update($record, $data)) {
+                $this->log->updated();
+
+            } else {
+                $this->log->updateFailed();
+
+            }
+        } catch (\Exception $e) {
+            $this->log->updateFailed();
+            $this->log->exception($e);
+            throw $e;
+
+        }
+    }
+
+    public function tryInsert($data)
+    {
+        try {
+            if ($record = $this->insert($data)) {
+                $this->log->inserted();
+
+            } else {
+                $this->log->insertFailed();
+
+            }
+        } catch (\Exception $e) {
+            $this->log->insertFailed();
+            $this->log->exception($e);
+            throw $e;
+
+        }
     }
 
     /**
@@ -121,7 +216,11 @@ abstract class AbstractStrategy implements Strategy
     {
         return $this->cache($value, function () use ($value) {
             if (!($record = $this->getRecordByIdentifier($value))) {
-                $record = $this->getModel()->newQueryWithoutScopes()->forceCreate($this->autoPrepare($value));
+                if (!$this->autoprepare) {
+                    throw new Exception('Related record not found (' . $value . ')');
+                }
+
+                $record = $this->getModel()->forceCreate($this->autoPrepare($value));
             }
 
             return $record->{$this->primary};
@@ -158,6 +257,13 @@ abstract class AbstractStrategy implements Strategy
     public function hasHeader()
     {
         return $this->header;
+    }
+
+    public function setLogger(Log $log)
+    {
+        $this->log = $log;
+
+        return $this;
     }
 
 }
