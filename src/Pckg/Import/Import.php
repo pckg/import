@@ -1,9 +1,9 @@
 <?php namespace Pckg\Import;
 
 use Exception;
-use Pckg\Import\Strategy;
 use Maatwebsite\Excel\Collections\CellCollection;
 use Maatwebsite\Excel\Readers\LaravelExcelReader;
+use Pckg\Import\Strategy;
 
 /**
  * Class Import

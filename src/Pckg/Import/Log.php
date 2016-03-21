@@ -49,6 +49,17 @@ class Log
         return $this->count('updated');
     }
 
+    protected function count($key)
+    {
+        if (!isset($this->stats[$key])) {
+            $this->stats[$key] = 0;
+        }
+
+        $this->stats[$key]++;
+
+        return $this;
+    }
+
     public function updateFailed()
     {
         return $this->count('update failed');
@@ -62,17 +73,6 @@ class Log
     public function insertFailed()
     {
         return $this->count('insert failed');
-    }
-
-    protected function count($key)
-    {
-        if (!isset($this->stats[$key])) {
-            $this->stats[$key] = 0;
-        }
-
-        $this->stats[$key]++;
-
-        return $this;
     }
 
     public function getExceptions()
