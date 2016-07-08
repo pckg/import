@@ -2,6 +2,7 @@
 
 trait MtmImport
 {
+
     /**
      * This shouldn't be called at all.
      *
@@ -29,6 +30,7 @@ trait MtmImport
      * Selects record from database by $identifier and creates/updates it.
      *
      * @param array $row
+     *
      * @return Model
      */
     public function import(array $row)
@@ -44,6 +46,7 @@ trait MtmImport
      * All other parameters are pivot parameters.
      *
      * @param array $data
+     *
      * @return static
      */
     public function insert($data = [])

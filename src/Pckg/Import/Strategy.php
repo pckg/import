@@ -34,6 +34,7 @@ interface Strategy
      * Transform numeric-indexed array into associative array.
      *
      * @param array $row
+     *
      * @return array
      */
     public function map(array $row);
@@ -42,6 +43,7 @@ interface Strategy
      * Transform foreign values into foreign keys.
      *
      * @param array $row
+     *
      * @return array
      */
     public function transform(array $row);
@@ -50,6 +52,7 @@ interface Strategy
      * Update existent record or create new one.
      *
      * @param array $row
+     *
      * @return Model
      */
     public function import(array $row);
@@ -58,6 +61,7 @@ interface Strategy
      * Get possible existing row from database.
      *
      * @param array $data
+     *
      * @return Model|null
      */
     public function getExistingRecord(array $data);

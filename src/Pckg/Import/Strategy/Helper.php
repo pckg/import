@@ -4,10 +4,12 @@ use Illuminate\Support\Facades\DB;
 
 trait Helper
 {
+
     /**
      * @param      $value
      * @param int  $true
      * @param null $false
+     *
      * @return int|null
      */
     public function toBool($value, $true = 1, $false = null)
@@ -21,6 +23,7 @@ trait Helper
 
     /**
      * @param $url
+     *
      * @return mixed
      */
     public function savePicture($url)
@@ -31,6 +34,7 @@ trait Helper
     /**
      * @param $x
      * @param $y
+     *
      * @return mixed
      */
     public function toPoint($x, $y)

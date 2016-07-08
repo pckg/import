@@ -98,7 +98,8 @@ class Log
         if ($this->exceptions) {
             $build .= '<p><strong>Exceptions:</strong>';
             foreach ($this->exceptions as $e) {
-                $build .= '<br /><b onclick="$(this).next().toggle(); return false;" style="cursor: pointer;">' . $e->getMessage() . '</b>';
+                $build .= '<br /><b onclick="$(this).next().toggle(); return false;" style="cursor: pointer;">' . $e->getMessage(
+                    ) . '</b>';
                 $build .= '<span style="display: none;"><br />@ ' . $e->getFile() . ':' . $e->getLine();
                 $build .= '<br />' . nl2br($e->getTraceAsString()) . '<br /></span>';
             }
@@ -106,6 +107,7 @@ class Log
         }
 
         $build .= '</div>';
+
         return $build;
     }
 

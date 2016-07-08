@@ -2,8 +2,10 @@
 
 trait WithoutMapperAndTransformator
 {
+
     /**
      * @param array $row
+     *
      * @return array
      */
     public function map(array $row)
@@ -13,6 +15,7 @@ trait WithoutMapperAndTransformator
 
     /**
      * @param array $row
+     *
      * @return array
      */
     public function transform(array $row)

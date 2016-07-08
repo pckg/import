@@ -9,6 +9,7 @@ use Maatwebsite\Excel\Readers\LaravelExcelReader;
 
 abstract class AbstractStrategy implements Strategy
 {
+
     use Cached;
 
     /**
@@ -40,23 +41,27 @@ abstract class AbstractStrategy implements Strategy
         }
 
         $count = 0;
-        $reader->each(function (CellCollection $row) use (&$count) {
-            if ($count > 0 || !$this->hasHeader()) {
-                $mapped = [];
-                try {
-                    $mapped = $this->map($row->all());
-                } catch (Exception $e) {
-                    $this->log->log('Validator mapping failed');
-                    throw $e;
-                }
-                $validator = Validator::make($mapped, $this->rules(), []);
+        $reader->each(
+            function(CellCollection $row) use (&$count) {
+                if ($count > 0 || !$this->hasHeader()) {
+                    $mapped = [];
+                    try {
+                        $mapped = $this->map($row->all());
+                    } catch (Exception $e) {
+                        $this->log->log('Validator mapping failed');
+                        throw $e;
+                    }
+                    $validator = Validator::make($mapped, $this->rules(), []);
 
-                if ($validator->fails()) {
-                    throw new Exception('Invalid row #' . $count . ': ' . implode(', ', $validator->messages()->all()));
+                    if ($validator->fails()) {
+                        throw new Exception(
+                            'Invalid row #' . $count . ': ' . implode(', ', $validator->messages()->all())
+                        );
+                    }
                 }
+                $count++;
             }
-            $count++;
-        });
+        );
     }
 
     public function rules()
@@ -77,6 +82,7 @@ abstract class AbstractStrategy implements Strategy
      * Selects record from database by $identifier and creates/updates it.
      *
      * @param array $row
+     *
      * @return Model
      */
     public function import(array $row)
@@ -160,6 +166,7 @@ abstract class AbstractStrategy implements Strategy
      *
      * @param Model $record
      * @param array $data
+     *
      * @return Model
      */
     public function update(Model $record, $data = [])
@@ -173,6 +180,7 @@ abstract class AbstractStrategy implements Strategy
      * Insert new record.
      *
      * @param array $data
+     *
      * @return static
      */
     public function insert($data = [])
@@ -187,6 +195,7 @@ abstract class AbstractStrategy implements Strategy
 
     /**
      * @param $model
+     *
      * @return $this
      */
     public function afterInsert($model)
@@ -198,6 +207,7 @@ abstract class AbstractStrategy implements Strategy
      * Return existing record by identifier.
      *
      * @param array $data
+     *
      * @return mixed
      */
     public function getExistingRecord(array $data)
@@ -210,25 +220,30 @@ abstract class AbstractStrategy implements Strategy
      * Creates one if it doesn't exist yet.
      *
      * @param $value
+     *
      * @return int
      */
     public function getPrimaryKey($value)
     {
-        return $this->cache($value, function () use ($value) {
-            if (!($record = $this->getRecordByIdentifier($value))) {
-                if (!$this->autoprepare) {
-                    throw new Exception('Related record not found (' . $value . ')');
+        return $this->cache(
+            $value,
+            function() use ($value) {
+                if (!($record = $this->getRecordByIdentifier($value))) {
+                    if (!$this->autoprepare) {
+                        throw new Exception('Related record not found (' . $value . ')');
+                    }
+
+                    $record = $this->getModel()->forceCreate($this->autoPrepare($value));
                 }
 
-                $record = $this->getModel()->forceCreate($this->autoPrepare($value));
+                return $record->{$this->primary};
             }
-
-            return $record->{$this->primary};
-        });
+        );
     }
 
     /**
      * @param $value
+     *
      * @return Model|null
      */
     public function getRecordByIdentifier($value)
@@ -240,6 +255,7 @@ abstract class AbstractStrategy implements Strategy
      * Return values for auto-created records.
      *
      * @param $value
+     *
      * @return array
      */
     public function autoPrepare($value)
