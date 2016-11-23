@@ -1,9 +1,9 @@
 <?php namespace Pckg\Import;
 
-use Exception;
 use Maatwebsite\Excel\Collections\CellCollection;
 use Maatwebsite\Excel\Readers\LaravelExcelReader;
 use Pckg\Import\Strategy;
+use Throwable;
 
 /**
  * Class Import
@@ -70,7 +70,7 @@ class Import
         $this->log->log('Validating rows');
         try {
             $this->strategy->validate($this->file);
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             $this->log->log('Invalid file/row, interrupting import');
             $this->log->exception($e);
 
@@ -87,7 +87,7 @@ class Import
                 if ($count > 0 || !$this->strategy->hasHeader()) {
                     try {
                         $this->strategy->import($row->all());
-                    } catch (Exception $e) {
+                    } catch (Throwable $e) {
                         $this->log->log('Exception @ row #' . $count . ' (' . json_encode($row->all()) . ')');
                         $this->log->exception($e);
                     }
@@ -126,7 +126,7 @@ class Import
                  ->import();
 
             $this->log->stop();
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             $this->log->log($e, true);
         }
 

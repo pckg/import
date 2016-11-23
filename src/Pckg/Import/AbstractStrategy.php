@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Validator;
 use Laraplus\Data\Cached;
 use Maatwebsite\Excel\Collections\CellCollection;
 use Maatwebsite\Excel\Readers\LaravelExcelReader;
+use Throwable;
 
 abstract class AbstractStrategy implements Strategy
 {
@@ -47,7 +48,7 @@ abstract class AbstractStrategy implements Strategy
                     $mapped = [];
                     try {
                         $mapped = $this->map($row->all());
-                    } catch (Exception $e) {
+                    } catch (Throwable $e) {
                         $this->log->log('Validator mapping failed');
                         throw $e;
                     }
