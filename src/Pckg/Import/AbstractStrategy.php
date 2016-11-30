@@ -92,7 +92,7 @@ abstract class AbstractStrategy implements Strategy
         $mapped = [];
         try {
             $mapped = $this->map($row);
-        } catch (\Exception $e) {
+        } catch (Throwable $e) {
             $this->log->log('Mapping failed');
             throw $e;
         }
@@ -100,7 +100,7 @@ abstract class AbstractStrategy implements Strategy
         try {
             $transformed = $this->transform($mapped);
             $data = $transformed;
-        } catch (\Exception $e) {
+        } catch (Throwable $e) {
             $this->log->log('Transformation failed');
             throw $e;
         }
@@ -128,7 +128,7 @@ abstract class AbstractStrategy implements Strategy
                 $this->log->updateFailed();
 
             }
-        } catch (\Exception $e) {
+        } catch (Throwable $e) {
             $this->log->updateFailed();
             $this->log->exception($e);
             throw $e;
@@ -146,7 +146,7 @@ abstract class AbstractStrategy implements Strategy
                 $this->log->insertFailed();
 
             }
-        } catch (\Exception $e) {
+        } catch (Throwable $e) {
             $this->log->insertFailed();
             $this->log->exception($e);
             throw $e;
