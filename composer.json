@@ -1,6 +1,6 @@
 {
   "name": "pckg/import",
-  "description": "Simple import strategies",
+  "description": "Import, validate and map imported data from common file formats",
   "homepage": "https://github.com/pckg/import",
   "license": "MIT",
   "authors": [
